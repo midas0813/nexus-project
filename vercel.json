@@ -1,17 +1,32 @@
 {
   "version": 2,
-  "buildCommand": "npm run build:vercel",
-  "outputDirectory": "dist/public",
-  "framework": null,
-  "functions": {
-    "dist/api.js": {
-      "runtime": "nodejs20.x"
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["contracts/**", "db/**"],
+        "bundle": true,
+        "esbuildOptions": {
+          "alias": {
+            "@contracts": "./contracts",
+            "@db": "./db"
+          }
+        }
+      }
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/dist/api.js"
+      "dest": "api/index.ts"
     },
     {
       "src": "/assets/(.*)",
