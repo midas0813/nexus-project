@@ -49,7 +49,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const request = new Request(url, {
       method: req.method,
       headers,
-      body: body?.length ? body : undefined,
+      body: body?.length ? (body as unknown as BodyInit) : undefined,
     });
 
     const response = await app.fetch(request);
