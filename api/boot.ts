@@ -7,20 +7,10 @@ import { createContext } from "./context";
 import { env } from "./lib/env";
 import { createOAuthCallbackHandler } from "./kimi/auth";
 import { Paths } from "@contracts/constants";
-import { serveStatic } from "@hono/node-server/serve-static";
-import { join } from "path";
-import { ensureUploadDir } from "./upload-router";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
 app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
-
-// Serve uploaded files
-ensureUploadDir();
-app.use("/api/uploads/*", serveStatic({
-  root: join(process.cwd(), "uploads"),
-  rewriteRequestPath: (path) => path.replace("/api/uploads/", ""),
-}));
 
 app.get(Paths.oauthCallback, createOAuthCallbackHandler());
 app.use("/api/trpc/*", async (c) => {

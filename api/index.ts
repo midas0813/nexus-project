@@ -62,6 +62,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     console.error("[handler error]", err);
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ error: "Internal Server Error", message: String(err) }));
+    res.end(JSON.stringify({ error: "Internal Server Error", message: String(err), stack: err instanceof Error ? err.stack : undefined }));
   }
 };

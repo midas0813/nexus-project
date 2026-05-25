@@ -1,12 +1,9 @@
 import { z } from "zod";
-import { mkdir } from "fs/promises";
 import { eq, desc } from "drizzle-orm";
 import { createRouter, publicQuery } from "./middleware";
 import { getDb } from "./queries/connection";
 import * as schema from "@db/schema";
-import { join } from "path";
 
-const UPLOAD_DIR = join(process.cwd(), "uploads");
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 const ALLOWED_TYPES: Record<string, string[]> = {
@@ -20,10 +17,14 @@ const ALLOWED_TYPES: Record<string, string[]> = {
 const ALL_ALLOWED_TYPES = Object.values(ALLOWED_TYPES).flat();
 
 export async function ensureUploadDir() {
+  // No-op in serverless environments
   try {
-    await mkdir(UPLOAD_DIR, { recursive: true });
+    const { mkdir } = await import("fs/promises");
+    const { join } = await import("path");
+    const uploadDir = join(process.cwd(), "uploads");
+    await mkdir(uploadDir, { recursive: true });
   } catch {
-    // Directory may already exist
+    // Ignore — read-only filesystem in serverless
   }
 }
 
@@ -45,14 +46,13 @@ export const uploadRouter = createRouter({
 
       const ext = input.fileName.split(".").pop() || "bin";
       const safeName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
-      const filePath = join(UPLOAD_DIR, safeName);
       const fileUrl = `/api/uploads/${safeName}`;
 
       return {
         uploadUrl: fileUrl,
         fileUrl: fileUrl,
         safeName,
-        filePath,
+        filePath: fileUrl,
       };
     }),
 
