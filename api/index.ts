@@ -26,10 +26,9 @@ app.use("/api/trpc/*", async (c) => {
 
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
-// Vercel serverless handler
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
-    const protocol = req.headers["x-forwarded-proto"] || "https";
+    const protocol = (req.headers["x-forwarded-proto"] as string) || "https";
     const host = req.headers.host || "localhost";
     const url = `${protocol}://${host}${req.url}`;
 
@@ -42,7 +41,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       req.method !== "GET" && req.method !== "HEAD"
         ? await new Promise<Buffer>((resolve) => {
             const chunks: Buffer[] = [];
-            req.on("data", (chunk) => chunks.push(chunk));
+            req.on("data", (chunk: Buffer) => chunks.push(chunk));
             req.on("end", () => resolve(Buffer.concat(chunks)));
           })
         : undefined;
@@ -65,4 +64,4 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({ error: "Internal Server Error", message: String(err) }));
   }
-}
+};
