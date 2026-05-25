@@ -10,8 +10,10 @@ let instance: ReturnType<typeof drizzle<typeof fullSchema>>;
 
 export function getDb() {
   if (!instance) {
+    // Strip ssl-mode param which mysql2 doesn't support, use ssl option instead
+    const url = env.databaseUrl.replace(/[?&]ssl-mode=[^&]*/i, "").replace(/\?$/, "");
     const connection = mysql.createPool({
-      uri: env.databaseUrl,
+      uri: url,
       ssl: { rejectUnauthorized: false },
     });
     instance = drizzle(connection, {
